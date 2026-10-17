@@ -1,0 +1,53 @@
+# Built application packages and bundles
+*.apk
+*.aab
+*.ap_
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated build directories
+build/
+app/build/
+/build
+/*/build
+out/
+
+# Gradle files and caches
+.gradle/
+
+# Local configuration file (contains machine-specific SDK paths)
+local.properties
+/local.properties
+
+# Signing keys and local signing configuration
+*.jks
+*.keystore
+*.p12
+*.key
+signing.properties
+key.properties
+
+# Log files
+*.log
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+.externalNativeBuild
+.cxx
+/captures
+
+# Kotlin compiler daemon caches
+.kotlin/
+
+# OS metadata
+.DS_Store
+.DS_Store?
+._*
+[Tt]humbs.db
+ehthumbs.db
+[Dd]esktop.ini

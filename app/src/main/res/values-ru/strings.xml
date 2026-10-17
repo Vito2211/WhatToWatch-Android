@@ -1,0 +1,195 @@
+<resources>
+    <!-- Application & Branding -->
+    <string name="app_name">ЧТО ПОСМОТРЕТЬ</string>
+    <string name="tagline">Персональная синематека</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_library">Библиотека</string>
+    <string name="nav_lists">Списки</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="title_content_detail">Детали</string>
+    <string name="title_add_content">Добавить</string>
+    <string name="title_edit_content">Редактировать</string>
+    <string name="title_quick_add">Быстрое добавление</string>
+    <string name="title_custom_lists">Мои списки</string>
+    <string name="title_manage_lists">Управление списками</string>
+    <string name="title_create_list">Создать список</string>
+    <string name="title_rename_list">Переименовать список</string>
+    <string name="title_new_category">Новая категория</string>
+    <string name="title_list_default">Список</string>
+    <string name="title_settings">Настройки</string>
+
+    <!-- Search & Filters -->
+    <string name="search_placeholder">Поиск по названию…</string>
+    <string name="filter_all">Все</string>
+    <string name="filter_categories">Категории</string>
+    <string name="filter_lists">Списки</string>
+    <string name="all_categories">Все категории</string>
+    <string name="all_lists">Все списки</string>
+    <string name="action_clear_filters">Сбросить фильтры</string>
+
+    <!-- Content Types -->
+    <string name="type_movie">Фильм</string>
+    <string name="type_series">Сериал</string>
+    <string name="type_video">Видео</string>
+    <string name="type_other">Другое</string>
+
+    <!-- Viewing Statuses -->
+    <string name="status_not_watched">Не просмотрено</string>
+    <string name="status_watching">Смотрю</string>
+    <string name="status_watched">Просмотрено</string>
+
+    <!-- Form & Fields -->
+    <string name="field_title">Название *</string>
+    <string name="field_title_hint">Введите название</string>
+    <string name="field_title_required">Название обязательно</string>
+    <string name="field_type">Тип контента</string>
+    <string name="field_status">Статус просмотра</string>
+    <string name="field_url">Ссылка</string>
+    <string name="field_url_hint">https://example.com</string>
+    <string name="field_description">Заметки или описание</string>
+    <string name="field_description_hint">Впечатления, оценки, сюжет…</string>
+    <string name="field_categories">Категории</string>
+    <string name="field_lists">Добавить в списки</string>
+    <string name="action_add_category">+ Новая категория</string>
+    <string name="category_name_hint">Название (например, Фантастика)</string>
+    <string name="list_name_hint">Название списка (например, Избранное)</string>
+    <string name="empty_categories_hint">Категорий пока нет. Нажмите +, чтобы добавить.</string>
+    <string name="empty_editor_lists_hint">Списки ещё не созданы. Вы можете создать их на вкладке «Списки».</string>
+    <string name="not_assigned_to_lists">Не добавлено ни в один список.</string>
+    <string name="no_lists_available">Нет доступных списков. Сначала создайте список на экране «Списки».</string>
+    <string name="content_not_found">Контент не найден</string>
+    <string name="added_on">Добавлено: %1$s</string>
+
+    <!-- Posters -->
+    <string name="poster_section_title">Постер</string>
+    <string name="action_add_poster">Добавить постер</string>
+    <string name="action_change_poster">Изменить постер</string>
+    <string name="action_remove_poster">Удалить постер</string>
+    <string name="poster_formats_hint">Поддерживаются форматы JPEG, PNG, WebP</string>
+    <string name="cd_poster_image">Постер контента</string>
+
+    <!-- Actions & Buttons -->
+    <string name="action_save">Сохранить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_edit">Редактировать</string>
+    <string name="action_rename">Переименовать</string>
+    <string name="action_create">Создать</string>
+    <string name="action_quick_add">Быстро добавить</string>
+    <string name="action_more_details">Подробнее</string>
+    <string name="action_open_link">Открыть ссылку</string>
+    <string name="action_change_status">Изменить статус</string>
+    <string name="action_remove_from_list">Удалить из списка</string>
+    <string name="action_manage_lists">Управление списками</string>
+    <string name="action_done">Готово</string>
+
+    <!-- Empty States -->
+    <string name="empty_library_title">Ваша синематека пуста</string>
+    <string name="empty_library_subtitle">Начните сохранять фильмы, сериалы и видео, нажав «Добавить».</string>
+    <string name="empty_search_title">Ничего не найдено</string>
+    <string name="empty_search_subtitle">Попробуйте изменить поисковый запрос или сбросить фильтры.</string>
+    <string name="empty_lists_title">Списков пока нет</string>
+    <string name="empty_lists_subtitle">Группируйте фильмы и сериалы в коллекции, например «Буду смотреть» или «Любимое».</string>
+    <string name="empty_list_items_title">В этом списке пусто</string>
+    <string name="empty_list_items_subtitle">Добавьте фильмы или сериалы в этот список из библиотеки.</string>
+
+    <!-- Dialogs & Warnings -->
+    <string name="dialog_delete_content_title">Удалить из библиотеки?</string>
+    <string name="dialog_delete_content_message">Вы уверены, что хотите навсегда удалить «%1$s» из библиотеки? Запись также будет удалена из всех списков.</string>
+    <string name="dialog_delete_list_title">Удалить список?</string>
+    <string name="dialog_delete_list_message">Вы уверены, что хотите удалить список «%1$s»? Фильмы и сериалы останутся в вашей библиотеке.</string>
+
+    <!-- In-App Language Selection -->
+    <string name="dialog_language_title">Язык приложения</string>
+    <string name="language_system_default">Как в системе</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+
+    <!-- Settings & Backup -->
+    <string name="settings_appearance">Внешний вид и язык</string>
+    <string name="settings_language">Язык приложения</string>
+    <string name="settings_backup_title">Резервное копирование</string>
+    <string name="settings_backup_subtitle">Экспортируйте библиотеку и постеры в офлайн ZIP-архив или восстановите данные из файла.</string>
+    <string name="action_export_backup">Создать резервную копию</string>
+    <string name="action_restore_backup">Восстановить из копии</string>
+    <string name="exporting_backup">Создание архива…</string>
+    <string name="export_success">Архив сохранён: %1$d записей, %2$d списков, %3$d постеров.</string>
+    <string name="inspecting_backup">Проверка архива…</string>
+    <string name="restore_preview_title">Предпросмотр архива</string>
+    <string name="restore_preview_date">Дата создания: %1$s</string>
+    <string name="restore_preview_version">Версия формата: %1$d</string>
+    <string name="restore_preview_summary">В архиве: %1$d записей, %2$d списков, %3$d категорий и %4$d постеров.</string>
+    <string name="restore_mode_title">Режим восстановления</string>
+    <string name="restore_mode_merge">Объединить с текущей библиотекой</string>
+    <string name="restore_mode_merge_desc">Сохранить текущие записи и добавить новые из копии.</string>
+    <string name="restore_mode_replace">Заменить текущую библиотеку</string>
+    <string name="restore_mode_replace_desc">Удалить текущие данные и полностью восстановить архив.</string>
+    <string name="restore_conflicts_title">Обнаружены совпадения (%1$d)</string>
+    <string name="restore_conflicts_desc">%1$d записей в архиве имеют такие же названия или ID, как и в библиотеке.</string>
+    <string name="restore_conflict_strategy">Разрешение конфликтов</string>
+    <string name="conflict_keep_both">Создать копию</string>
+    <string name="conflict_overwrite">Перезаписать существующие</string>
+    <string name="conflict_skip">Оставить текущие</string>
+    <string name="restore_replace_warning">Внимание: при замене все текущие записи, категории и списки на этом устройстве будут удалены.</string>
+    <string name="action_confirm_restore">Восстановить</string>
+    <string name="restoring_backup">Восстановление библиотеки…</string>
+    <string name="restore_success">Успешно восстановлено %1$d записей.</string>
+    <string name="restore_failed">Ошибка восстановления: %1$s</string>
+    <string name="export_failed">Ошибка экспорта: %1$s</string>
+
+    <!-- Accessibility Content Descriptions -->
+    <string name="cd_back">Назад</string>
+    <string name="cd_clear_search">Очистить поиск</string>
+    <string name="cd_add_content">Добавить запись</string>
+    <string name="cd_custom_lists">Мои списки</string>
+    <string name="cd_language_settings">Выбор языка</string>
+    <string name="cd_settings">Настройки</string>
+    <string name="cd_edit_content">Редактировать запись</string>
+    <string name="cd_delete_content">Удалить запись</string>
+    <string name="cd_rename_list">Переименовать список</string>
+    <string name="cd_delete_list">Удалить список</string>
+    <string name="cd_open_link">Открыть внешнюю ссылку</string>
+    <string name="cd_poster_placeholder">Постер контента</string>
+
+    <!-- Plural and formatted counts -->
+    <string name="items_count">%1$d записей</string>
+    <string name="item_count_single">1 запись</string>
+    <plurals name="items_count_plural">
+        <item quantity="one">%1$d запись</item>
+        <item quantity="few">%1$d записи</item>
+        <item quantity="many">%1$d записей</item>
+        <item quantity="other">%1$d записей</item>
+    </plurals>
+    <!-- Sharing & Deep Links -->
+    <string name="action_share">Поделиться</string>
+    <string name="action_share_item">Поделиться фильмом/сериалом</string>
+    <string name="action_share_list">Поделиться коллекцией</string>
+    <string name="share_fallback_file_notice">Данные превысили лимит длины ссылки. Отправлено файлом.</string>
+    <string name="share_error">Не удалось поделиться: %1$s</string>
+    <string name="share_chooser_title">Поделиться с помощью</string>
+    <string name="title_import_preview">Импорт данных</string>
+    <string name="import_preview_subtitle">Проверьте элементы перед добавлением в библиотеку</string>
+    <string name="import_source_item">Элемент библиотеки</string>
+    <string name="import_source_list">Пользовательская коллекция</string>
+    <string name="import_contents_header">Элементы (%1$d)</string>
+    <string name="import_select_all">Выбрать все</string>
+    <string name="import_deselect_all">Снять все</string>
+    <string name="import_no_items_selected">Выберите хотя бы один элемент для импорта</string>
+    <string name="import_conflict_header">Разрешение конфликтов</string>
+    <string name="import_conflict_skip">Пропустить существующие дубликаты</string>
+    <string name="import_conflict_copy">Импортировать как копию</string>
+    <string name="import_conflict_overwrite">Перезаписать существующие</string>
+    <string name="import_conflicts_detected">%1$d элементов уже есть в вашей библиотеке</string>
+    <string name="import_categories_summary">Включает категорий: %1$d</string>
+    <string name="import_list_summary">Включает коллекцию «%1$s»</string>
+    <string name="action_confirm_import">Импортировать выбранное</string>
+    <string name="action_cancel_import">Отмена</string>
+    <string name="import_success">Успешно импортировано элементов: %1$d.</string>
+    <string name="import_failed">Ошибка импорта: %1$s</string>
+    <string name="import_invalid_link">Недействительная или поврежденная ссылка.</string>
+    <string name="import_unsupported_version">Неподдерживаемая версия формата (%1$d).</string>
+    <string name="import_loading">Загрузка данных для импорта…</string>
+    <string name="import_empty_payload">Отправленные данные не содержат элементов.</string>
+    <string name="cd_share">Поделиться</string>
+</resources>
