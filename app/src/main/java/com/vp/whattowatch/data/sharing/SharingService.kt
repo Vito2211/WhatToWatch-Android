@@ -171,7 +171,15 @@ class SharingService(
             throw SecurityException("Encoded payload exceeds maximum length limit.")
         }
 
-        val compressedBytes = Base64.getUrlDecoder().decode(clean)
+        val compressedBytes = try {
+            Base64.getUrlDecoder().decode(clean)
+        } catch (_: IllegalArgumentException) {
+            try {
+                Base64.getDecoder().decode(clean)
+            } catch (e: Exception) {
+                throw IllegalArgumentException("Invalid Base64 payload string: ${e.message}", e)
+            }
+        }
         if (compressedBytes.size > MAX_COMPRESSED_PAYLOAD_BYTES) {
             throw SecurityException("Compressed payload size exceeds limit of $MAX_COMPRESSED_PAYLOAD_BYTES bytes.")
         }
@@ -242,15 +250,17 @@ class SharingService(
             throw IllegalArgumentException("Invalid deep link scheme or host: $deepLinkUri")
         }
 
-        val encoded = deepLinkUri.getQueryParameter("data")
+        val rawEncoded = deepLinkUri.getQueryParameter("data")
+            ?: deepLinkUri.getQueryParameter("share")
             ?: deepLinkUri.path?.removePrefix("/")
             ?: throw IllegalArgumentException("Missing share data in deep link.")
 
-        if (encoded.isBlank()) {
+        val clean = Uri.decode(rawEncoded).trim()
+        if (clean.isBlank()) {
             throw IllegalArgumentException("Empty payload in deep link.")
         }
 
-        return decodeAndDecompress(encoded)
+        return decodeAndDecompress(clean)
     }
 
     /**
