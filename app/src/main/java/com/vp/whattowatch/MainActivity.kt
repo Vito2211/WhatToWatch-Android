@@ -59,12 +59,23 @@ class MainActivity : ComponentActivity() {
                 pendingImportRoute.value = Screen.ImportPreview.createRoute(deepLink = data.toString())
             }
 
-            // Case 2: Opening a file: content:// or file://
+            // Case 2: Web share link: https://vito2211.github.io/WhatoToWatch/...
+            action == Intent.ACTION_VIEW && data != null && (data.scheme == "https" || data.scheme == "http") -> {
+                val hasPayload = !data.fragment.isNullOrBlank() ||
+                        data.getQueryParameter("data") != null ||
+                        data.getQueryParameter("share") != null ||
+                        data.path?.contains("/share") == true
+                if (hasPayload) {
+                    pendingImportRoute.value = Screen.ImportPreview.createRoute(deepLink = data.toString())
+                }
+            }
+
+            // Case 3: Opening a file: content:// or file://
             action == Intent.ACTION_VIEW && data != null -> {
                 pendingImportRoute.value = Screen.ImportPreview.createRoute(fileUri = data.toString())
             }
 
-            // Case 3: Sharesheet incoming text or stream
+            // Case 4: Sharesheet incoming text or stream
             action == Intent.ACTION_SEND -> {
                 val streamUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
@@ -80,8 +91,9 @@ class MainActivity : ComponentActivity() {
                     }
                     !extraText.isNullOrBlank() -> {
                         val trimmed = extraText.trim()
-                        if (trimmed.startsWith("whattowatch://")) {
-                            pendingImportRoute.value = Screen.ImportPreview.createRoute(deepLink = trimmed)
+                        val urlMatch = Regex("""(https?://[^\s]+|whattowatch://[^\s]+)""").find(trimmed)
+                        if (urlMatch != null) {
+                            pendingImportRoute.value = Screen.ImportPreview.createRoute(deepLink = urlMatch.value)
                         } else {
                             pendingImportRoute.value = Screen.ImportPreview.createRoute(rawPayload = trimmed)
                         }

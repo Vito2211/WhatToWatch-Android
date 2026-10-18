@@ -28,6 +28,8 @@ class ImportPreviewViewModel(
     private val _uiState = MutableStateFlow(ImportPreviewUiState(isLoading = true))
     val uiState: StateFlow<ImportPreviewUiState> = _uiState.asStateFlow()
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     init {
         loadPayload()
     }
@@ -52,13 +54,18 @@ class ImportPreviewViewModel(
                         val trimmed = rawPayload.trim()
                         when {
                             trimmed.startsWith("{") -> {
-                                Json { ignoreUnknownKeys = true }.decodeFromString(SharePayload.serializer(), trimmed)
+                                json.decodeFromString(SharePayload.serializer(), trimmed)
                             }
-                            trimmed.startsWith("whattowatch://") -> {
+                            trimmed.startsWith("whattowatch://") || trimmed.startsWith("https://") || trimmed.startsWith("http://") -> {
                                 sharingService.decodeFromDeepLink(Uri.parse(trimmed))
                             }
                             else -> {
-                                sharingService.decodeAndDecompress(trimmed)
+                                val urlMatch = Regex("""(https?://[^\s]+|whattowatch://[^\s]+)""").find(trimmed)
+                                if (urlMatch != null) {
+                                    sharingService.decodeFromDeepLink(Uri.parse(urlMatch.value))
+                                } else {
+                                    sharingService.decodeAndDecompress(trimmed)
+                                }
                             }
                         }
                     }

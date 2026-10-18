@@ -33,7 +33,8 @@ class SharingService(
     private val categoryDao: CategoryDao,
     private val customListDao: CustomListDao,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val fileUriProvider: ((File) -> Uri)? = null
+    private val fileUriProvider: ((File) -> Uri)? = null,
+    private val webShareBaseUrl: String = WEB_SHARE_BASE_URL
 ) {
 
     private val json = Json {
@@ -45,6 +46,7 @@ class SharingService(
     companion object {
         const val DEEP_LINK_SCHEME = "whattowatch"
         const val DEEP_LINK_HOST = "share"
+        const val WEB_SHARE_BASE_URL = "https://vito2211.github.io/WhatoToWatch/#share/"
 
         // Maximum safe URL length for Android intents and browsers
         const val MAX_DEEP_LINK_URL_LENGTH = 2000
@@ -196,15 +198,26 @@ class SharingService(
     }
 
     /**
-     * Generates a share result: deep-link URL if <= MAX_DEEP_LINK_URL_LENGTH, otherwise a portable shared file.
+     * Builds the public website share URL for an encoded payload.
+     */
+    fun buildWebShareUrl(encodedPayload: String): String = "$webShareBaseUrl$encodedPayload"
+
+    /**
+     * Builds the custom-scheme deep link URL for an encoded payload.
+     */
+    fun buildCustomSchemeUrl(encodedPayload: String): String = "$DEEP_LINK_SCHEME://$DEEP_LINK_HOST/$encodedPayload"
+
+    /**
+     * Generates a share result: clickable HTTPS web link if <= MAX_DEEP_LINK_URL_LENGTH,
+     * otherwise a portable shared .whattowatch file through FileProvider.
      */
     suspend fun generateShareResult(payload: SharePayload): ShareResult = withContext(ioDispatcher) {
         try {
             val encoded = compressAndEncode(payload)
-            val deepLinkUrl = "$DEEP_LINK_SCHEME://$DEEP_LINK_HOST/$encoded"
+            val shareUrl = buildWebShareUrl(encoded)
 
-            if (deepLinkUrl.length <= MAX_DEEP_LINK_URL_LENGTH) {
-                ShareResult.DeepLink(url = deepLinkUrl, title = payload.title)
+            if (shareUrl.length <= MAX_DEEP_LINK_URL_LENGTH) {
+                ShareResult.DeepLink(url = shareUrl, title = payload.title)
             } else {
                 // Fall back to file sharing through FileProvider
                 val file = createSharedFile(payload)
@@ -240,20 +253,27 @@ class SharingService(
     }
 
     /**
-     * Decodes a deep-link URI (e.g. whattowatch://share/<encoded> or whattowatch://share?data=<encoded>).
+     * Decodes a deep-link URI:
+     * - Published website HTTPS URL (e.g. https://vito2211.github.io/WhatoToWatch/#share/<encoded> or ?data=<encoded>)
+     * - Custom scheme deep-link URI (e.g. whattowatch://share/<encoded> or whattowatch://share?data=<encoded>)
      */
     fun decodeFromDeepLink(deepLinkUri: Uri): SharePayload {
         val scheme = deepLinkUri.scheme
         val host = deepLinkUri.host
 
-        if (scheme != DEEP_LINK_SCHEME || host != DEEP_LINK_HOST) {
+        val isCustomScheme = scheme.equals(DEEP_LINK_SCHEME, ignoreCase = true)
+        val isHttpScheme = scheme.equals("https", ignoreCase = true) || scheme.equals("http", ignoreCase = true)
+
+        if (!isCustomScheme && !isHttpScheme) {
             throw IllegalArgumentException("Invalid deep link scheme or host: $deepLinkUri")
         }
 
-        val rawEncoded = deepLinkUri.getQueryParameter("data")
-            ?: deepLinkUri.getQueryParameter("share")
-            ?: deepLinkUri.path?.removePrefix("/")
-            ?: throw IllegalArgumentException("Missing share data in deep link.")
+        if (isCustomScheme && !host.equals(DEEP_LINK_HOST, ignoreCase = true)) {
+            throw IllegalArgumentException("Invalid deep link scheme or host: $deepLinkUri")
+        }
+
+        val rawEncoded = extractPayloadStringFromUri(deepLinkUri)
+            ?: throw IllegalArgumentException("Missing share data in deep link: $deepLinkUri")
 
         val clean = Uri.decode(rawEncoded).trim()
         if (clean.isBlank()) {
@@ -261,6 +281,54 @@ class SharingService(
         }
 
         return decodeAndDecompress(clean)
+    }
+
+    private fun extractPayloadStringFromUri(uri: Uri): String? {
+        // 1. Query parameters (?data=... or ?share=...)
+        val qData = uri.getQueryParameter("data") ?: uri.getQueryParameter("share")
+        if (!qData.isNullOrBlank()) {
+            return qData
+        }
+
+        // 2. Hash fragment (#share/..., #/share/..., #data=..., #share=..., or direct hash)
+        val fragment = uri.fragment
+        if (!fragment.isNullOrBlank()) {
+            var h = fragment.trim()
+            while (h.startsWith("#") || h.startsWith("/") || h.startsWith("!") || h.startsWith("?")) {
+                h = h.substring(1).trim()
+            }
+            when {
+                h.startsWith("share/", ignoreCase = true) -> return h.substring(6)
+                h.startsWith("data=", ignoreCase = true) -> return h.substring(5)
+                h.startsWith("share=", ignoreCase = true) -> return h.substring(6)
+                h.contains("data=") || h.contains("share=") -> {
+                    val subUri = Uri.parse("dummy://dummy?$h")
+                    val subData = subUri.getQueryParameter("data") ?: subUri.getQueryParameter("share")
+                    if (!subData.isNullOrBlank()) return subData
+                }
+                h.length >= 16 && !h.contains("/") -> return h
+            }
+        }
+
+        // 3. Path segments (e.g. whattowatch://share/<encoded> or /WhatoToWatch/share/<encoded>)
+        val pathSegments = uri.pathSegments
+        if (pathSegments.isNotEmpty()) {
+            val shareIndex = pathSegments.indexOfFirst { it.equals("share", ignoreCase = true) }
+            if (shareIndex != -1 && shareIndex + 1 < pathSegments.size) {
+                return pathSegments[shareIndex + 1]
+            } else if (uri.scheme.equals(DEEP_LINK_SCHEME, ignoreCase = true) && uri.host.equals(DEEP_LINK_HOST, ignoreCase = true)) {
+                return pathSegments[0]
+            }
+        }
+
+        // 4. Direct path fallback
+        val path = uri.path
+        if (!path.isNullOrBlank() && uri.scheme.equals(DEEP_LINK_SCHEME, ignoreCase = true)) {
+            val stripped = path.removePrefix("/")
+            if (stripped.isNotBlank()) return stripped
+        }
+
+        return null
     }
 
     /**

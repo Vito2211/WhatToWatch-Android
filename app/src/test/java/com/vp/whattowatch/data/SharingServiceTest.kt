@@ -212,7 +212,7 @@ class SharingServiceTest {
         val result = sharingService.generateShareResult(payload)
         assertTrue("Expected DeepLink for small payload", result is ShareResult.DeepLink)
         val deepLink = result as ShareResult.DeepLink
-        assertTrue(deepLink.url.startsWith("whattowatch://share/"))
+        assertTrue(deepLink.url.startsWith("https://vito2211.github.io/WhatoToWatch/#share/"))
         assertTrue(deepLink.url.length <= SharingService.MAX_DEEP_LINK_URL_LENGTH)
 
         // Verify decodeFromDeepLink
@@ -662,5 +662,160 @@ class SharingServiceTest {
 
         // Check that database remains completely empty before executeImport is called
         assertEquals(0, contentDao.getAllEntities().size)
+    }
+
+    @Test
+    fun testBuildCustomSchemeUrl_generatesValidWhattowatchLink() {
+        val encoded = "test_payload_123"
+        val customUrl = sharingService.buildCustomSchemeUrl(encoded)
+        assertEquals("whattowatch://share/test_payload_123", customUrl)
+    }
+
+    @Test
+    fun testDecodeFromDeepLink_supportsCustomSchemeBackwardCompatibility() {
+        val payload = SharePayload(
+            version = 1,
+            type = ShareType.SINGLE_ITEM,
+            title = "Legacy Test",
+            contents = listOf(
+                ShareContentItem(
+                    id = UUID.randomUUID().toString(),
+                    title = "Legacy Movie",
+                    contentType = "MOVIE",
+                    watchStatus = "WATCHED",
+                    createdAt = 1000L,
+                    updatedAt = 1000L
+                )
+            )
+        )
+        val encoded = sharingService.compressAndEncode(payload)
+
+        // Path format: whattowatch://share/<encoded>
+        val decoded1 = sharingService.decodeFromDeepLink(Uri.parse("whattowatch://share/$encoded"))
+        assertEquals("Legacy Test", decoded1.title)
+
+        // Query format: whattowatch://share?data=<encoded>
+        val decoded2 = sharingService.decodeFromDeepLink(Uri.parse("whattowatch://share?data=$encoded"))
+        assertEquals("Legacy Test", decoded2.title)
+
+        // Query format: whattowatch://share?share=<encoded>
+        val decoded3 = sharingService.decodeFromDeepLink(Uri.parse("whattowatch://share?share=$encoded"))
+        assertEquals("Legacy Test", decoded3.title)
+    }
+
+    @Test
+    fun testDecodeFromDeepLink_supportsHttpsHashAndQueryVariations() {
+        val payload = SharePayload(
+            version = 1,
+            type = ShareType.SINGLE_ITEM,
+            title = "Web Link Test",
+            contents = listOf(
+                ShareContentItem(
+                    id = UUID.randomUUID().toString(),
+                    title = "Web Movie",
+                    contentType = "MOVIE",
+                    watchStatus = "NOT_WATCHED",
+                    createdAt = 1000L,
+                    updatedAt = 1000L
+                )
+            )
+        )
+        val encoded = sharingService.compressAndEncode(payload)
+
+        // Standard hash format: https://vito2211.github.io/WhatoToWatch/#share/<encoded>
+        val decodedHash = sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/#share/$encoded"))
+        assertEquals("Web Link Test", decodedHash.title)
+
+        // Slash-share hash format: #/share/<encoded>
+        val decodedSlashHash = sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/#/share/$encoded"))
+        assertEquals("Web Link Test", decodedSlashHash.title)
+
+        // Hash data format: #data=<encoded>
+        val decodedDataHash = sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/#data=$encoded"))
+        assertEquals("Web Link Test", decodedDataHash.title)
+
+        // Direct hash format: #<encoded>
+        val decodedDirectHash = sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/#$encoded"))
+        assertEquals("Web Link Test", decodedDirectHash.title)
+
+        // Query parameter format: ?data=<encoded>
+        val decodedQuery = sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/?data=$encoded"))
+        assertEquals("Web Link Test", decodedQuery.title)
+
+        // Query parameter format: ?share=<encoded>
+        val decodedShareQuery = sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/?share=$encoded"))
+        assertEquals("Web Link Test", decodedShareQuery.title)
+
+        // Path format: /WhatoToWatch/share/<encoded>
+        val decodedPath = sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/share/$encoded"))
+        assertEquals("Web Link Test", decodedPath.title)
+    }
+
+    @Test
+    fun testDecodeFromDeepLink_rejectsInvalidSchemeOrHost() {
+        // Invalid scheme: ftp://
+        var errorThrown = false
+        try {
+            sharingService.decodeFromDeepLink(Uri.parse("ftp://vito2211.github.io/WhatoToWatch/#share/abc"))
+        } catch (e: IllegalArgumentException) {
+            errorThrown = true
+            assertTrue(e.message!!.contains("Invalid deep link scheme"))
+        }
+        assertTrue("Should reject non-http/https/whattowatch scheme", errorThrown)
+
+        // Invalid host for whattowatch scheme: whattowatch://settings
+        errorThrown = false
+        try {
+            sharingService.decodeFromDeepLink(Uri.parse("whattowatch://settings/abc"))
+        } catch (e: IllegalArgumentException) {
+            errorThrown = true
+            assertTrue(e.message!!.contains("Invalid deep link scheme or host"))
+        }
+        assertTrue("Should reject non-share host for whattowatch scheme", errorThrown)
+
+        // Missing payload: https://vito2211.github.io/WhatoToWatch/
+        errorThrown = false
+        try {
+            sharingService.decodeFromDeepLink(Uri.parse("https://vito2211.github.io/WhatoToWatch/"))
+        } catch (e: IllegalArgumentException) {
+            errorThrown = true
+            assertTrue(e.message!!.contains("Missing share data"))
+        }
+        assertTrue("Should reject URL missing share data", errorThrown)
+    }
+
+    @Test
+    fun testGenerateShareResult_urlLengthEvaluatedWithFullHttpsUrl() = runBlocking {
+        // Test with custom service having very small limit to verify evaluation with full HTTPS URL
+        val testService = SharingService(
+            context = context,
+            database = db,
+            contentDao = contentDao,
+            categoryDao = categoryDao,
+            customListDao = customListDao,
+            fileUriProvider = { Uri.fromFile(it) }
+        )
+
+        val payload = SharePayload(
+            version = 1,
+            type = ShareType.SINGLE_ITEM,
+            title = "Length Check",
+            contents = listOf(
+                ShareContentItem(
+                    id = "check-1",
+                    title = "Title",
+                    contentType = "MOVIE",
+                    watchStatus = "WATCHED",
+                    createdAt = 1000L,
+                    updatedAt = 1000L
+                )
+            )
+        )
+
+        val result = testService.generateShareResult(payload)
+        assertTrue(result is ShareResult.DeepLink)
+        val url = (result as ShareResult.DeepLink).url
+        assertTrue(url.startsWith("https://vito2211.github.io/WhatoToWatch/#share/"))
+        assertTrue("Full HTTPS URL length must be checked against MAX_DEEP_LINK_URL_LENGTH", url.length <= SharingService.MAX_DEEP_LINK_URL_LENGTH)
     }
 }

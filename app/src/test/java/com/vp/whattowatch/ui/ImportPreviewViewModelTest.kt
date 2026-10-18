@@ -243,4 +243,78 @@ class ImportPreviewViewModelTest {
         assertNotNull(savedItem)
         assertEquals("Confirm Import Movie", savedItem!!.title)
     }
+
+    @Test
+    fun testLoadPayloadFromHttpsWebLink_success() = runBlocking {
+        val itemId = UUID.randomUUID().toString()
+        val payload = SharePayload(
+            version = 1,
+            type = ShareType.SINGLE_ITEM,
+            title = "HTTPS Import Item",
+            contents = listOf(
+                ShareContentItem(
+                    id = itemId,
+                    title = "HTTPS Movie",
+                    contentType = "MOVIE",
+                    watchStatus = "WATCHED",
+                    createdAt = 1000L,
+                    updatedAt = 1000L
+                )
+            )
+        )
+        val encoded = sharingService.compressAndEncode(payload)
+        val httpsLink = "https://vito2211.github.io/WhatoToWatch/#share/$encoded"
+
+        val viewModel = ImportPreviewViewModel(
+            application = app,
+            sharingService = sharingService,
+            deepLink = httpsLink,
+            fileUri = null,
+            rawPayload = null
+        )
+
+        val loadedState = viewModel.uiState.first { !it.isLoading }
+        assertNotNull(loadedState.preview)
+        assertTrue(loadedState.preview!!.isValid)
+        assertEquals("HTTPS Import Item", loadedState.preview!!.payload?.title)
+        assertEquals(1, loadedState.selectedItemIds.size)
+        assertTrue(loadedState.selectedItemIds.contains(itemId))
+    }
+
+    @Test
+    fun testLoadPayloadFromRawTextContainingHttpsLink_success() = runBlocking {
+        val itemId = UUID.randomUUID().toString()
+        val payload = SharePayload(
+            version = 1,
+            type = ShareType.SINGLE_ITEM,
+            title = "Text URL Item",
+            contents = listOf(
+                ShareContentItem(
+                    id = itemId,
+                    title = "Shared via Chat Movie",
+                    contentType = "MOVIE",
+                    watchStatus = "NOT_WATCHED",
+                    createdAt = 1000L,
+                    updatedAt = 1000L
+                )
+            )
+        )
+        val encoded = sharingService.compressAndEncode(payload)
+        val chatMessage = "Hey check this movie out: https://vito2211.github.io/WhatoToWatch/#share/$encoded Enjoy!"
+
+        val viewModel = ImportPreviewViewModel(
+            application = app,
+            sharingService = sharingService,
+            deepLink = null,
+            fileUri = null,
+            rawPayload = chatMessage
+        )
+
+        val loadedState = viewModel.uiState.first { !it.isLoading }
+        assertNotNull(loadedState.preview)
+        assertTrue(loadedState.preview!!.isValid)
+        assertEquals("Text URL Item", loadedState.preview!!.payload?.title)
+        assertEquals(1, loadedState.selectedItemIds.size)
+        assertTrue(loadedState.selectedItemIds.contains(itemId))
+    }
 }

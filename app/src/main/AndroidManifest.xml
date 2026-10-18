@@ -33,6 +33,14 @@
                 <data android:scheme="whattowatch" android:host="share" />
             </intent-filter>
 
+            <!-- Published website share links: https://vito2211.github.io/WhatoToWatch/... -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="vito2211.github.io" android:pathPrefix="/WhatoToWatch" />
+            </intent-filter>
+
             <!-- File view: .whattowatch or application/json -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
